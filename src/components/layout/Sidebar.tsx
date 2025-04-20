@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { 
   User, 
   Calendar, 
@@ -73,7 +73,7 @@ const Sidebar = () => {
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.path}>
-              <Link 
+              <NavLink 
                 to={item.path}
                 className={({ isActive }) => cn(
                   "flex items-center px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent/40 transition-colors",
@@ -83,7 +83,7 @@ const Sidebar = () => {
               >
                 <span className="flex-shrink-0">{item.icon}</span>
                 {!collapsed && <span className="ml-3">{item.name}</span>}
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
