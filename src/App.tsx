@@ -12,7 +12,6 @@ import Patients from "./pages/Patients";
 import Appointments from "./pages/Appointments";
 import Prescriptions from "./pages/Prescriptions";
 import Payments from "./pages/Payments";
-import AppLayout from "./components/layout/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -25,11 +24,11 @@ const App = () => (
           <Sonner />
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-            <Route path="/patients" element={<AppLayout><Patients /></AppLayout>} />
-            <Route path="/appointments" element={<AppLayout><Appointments /></AppLayout>} />
-            <Route path="/prescriptions" element={<AppLayout><Prescriptions /></AppLayout>} />
-            <Route path="/payments" element={<AppLayout><Payments /></AppLayout>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/patients" element={<Patients />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/prescriptions" element={<Prescriptions />} />
+            <Route path="/payments" element={<Payments />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
