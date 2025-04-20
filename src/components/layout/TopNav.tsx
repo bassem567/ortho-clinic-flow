@@ -2,8 +2,19 @@
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/providers/AuthProvider";
 
 const TopNav = () => {
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <header className="border-b border-border bg-card px-4 py-3">
       <div className="flex justify-between items-center">
@@ -26,6 +37,10 @@ const TopNav = () => {
           <span className="hidden md:block text-sm font-medium">
             Today: {new Date().toLocaleDateString()}
           </span>
+
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
+            Sign Out
+          </Button>
         </div>
       </div>
     </header>

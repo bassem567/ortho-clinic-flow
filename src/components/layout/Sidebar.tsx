@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { 
   User, 
   Calendar, 
@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/AuthProvider";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const { signOut } = useAuth();
 
   const toggleSidebar = () => setCollapsed(!collapsed);
 
@@ -71,7 +73,7 @@ const Sidebar = () => {
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.path}>
-              <NavLink 
+              <Link 
                 to={item.path}
                 className={({ isActive }) => cn(
                   "flex items-center px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent/40 transition-colors",
@@ -81,7 +83,7 @@ const Sidebar = () => {
               >
                 <span className="flex-shrink-0">{item.icon}</span>
                 {!collapsed && <span className="ml-3">{item.name}</span>}
-              </NavLink>
+              </Link>
             </li>
           ))}
         </ul>
