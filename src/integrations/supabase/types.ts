@@ -9,7 +9,217 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          reason: string | null
+          status: Database["public"]["Enums"]["appointment_status"]
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          reason?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          reason?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          address: string | null
+          age: number | null
+          allergies: string | null
+          contact: string | null
+          created_at: string
+          email: string | null
+          gender: string | null
+          id: string
+          medical_history: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          age?: number | null
+          allergies?: string | null
+          contact?: string | null
+          created_at?: string
+          email?: string | null
+          gender?: string | null
+          id?: string
+          medical_history?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          age?: number | null
+          allergies?: string | null
+          contact?: string | null
+          created_at?: string
+          email?: string | null
+          gender?: string | null
+          id?: string
+          medical_history?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          id: string
+          notes: string | null
+          patient_id: string
+          payment_date: string
+          status: Database["public"]["Enums"]["payment_status"]
+          visit_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          notes?: string | null
+          patient_id: string
+          payment_date?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          visit_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          payment_date?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescriptions: {
+        Row: {
+          created_at: string
+          doctor: string
+          id: string
+          medications: Json
+          notes: string | null
+          patient_id: string
+          visit_id: string
+        }
+        Insert: {
+          created_at?: string
+          doctor: string
+          id?: string
+          medications: Json
+          notes?: string | null
+          patient_id: string
+          visit_id: string
+        }
+        Update: {
+          created_at?: string
+          doctor?: string
+          id?: string
+          medications?: Json
+          notes?: string | null
+          patient_id?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visits: {
+        Row: {
+          complaint: string
+          diagnosis: string | null
+          doctor: string
+          id: string
+          notes: string | null
+          patient_id: string
+          treatment: string | null
+          visit_date: string
+        }
+        Insert: {
+          complaint: string
+          diagnosis?: string | null
+          doctor: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          treatment?: string | null
+          visit_date?: string
+        }
+        Update: {
+          complaint?: string
+          diagnosis?: string | null
+          doctor?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          treatment?: string | null
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +228,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      appointment_status: "scheduled" | "completed" | "cancelled" | "no_show"
+      payment_status: "paid" | "pending" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +344,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      appointment_status: ["scheduled", "completed", "cancelled", "no_show"],
+      payment_status: ["paid", "pending", "cancelled"],
+    },
   },
 } as const
