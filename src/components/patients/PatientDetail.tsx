@@ -6,7 +6,7 @@ import { Calendar, DollarSign, FileCheck, FileText, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 interface PatientDetailProps {
-  patientId: number;
+  patientId: string;
   onClose: () => void;
 }
 
