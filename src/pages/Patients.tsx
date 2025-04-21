@@ -1,35 +1,72 @@
 
+import { useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import PatientDetail from "@/components/patients/PatientDetail";
+import AddPatientDialog from "@/components/patients/AddPatientDialog";
+import { toast } from "@/hooks/use-toast";
 
-// Mock patient data
-const MOCK_PATIENTS = [
-  { id: 1, name: "John Doe", age: 42, contact: "555-1234", condition: "Knee injury" },
-  { id: 2, name: "Jane Smith", age: 35, contact: "555-2345", condition: "Back pain" },
-  { id: 3, name: "Robert Johnson", age: 65, contact: "555-3456", condition: "Hip replacement" },
-  { id: 4, name: "Sarah Williams", age: 28, contact: "555-4567", condition: "Ankle sprain" },
-  { id: 5, name: "Michael Brown", age: 53, contact: "555-5678", condition: "Shoulder pain" },
-  { id: 6, name: "Emily Davis", age: 32, contact: "555-6789", condition: "Wrist fracture" },
-  { id: 7, name: "David Miller", age: 47, contact: "555-7890", condition: "Neck pain" },
-];
+interface Patient {
+  id: string;
+  name: string;
+  age: number | null;
+  contact: string | null;
+  condition?: string | null;
+  gender: string | null;
+  email: string | null;
+  address: string | null;
+  medical_history: string | null;
+  allergies: string | null;
+}
 
 const Patients = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState<number | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPatients = MOCK_PATIENTS.filter(
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("patients")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setPatients(data || []);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load patients data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const filteredPatients = patients.filter(
     (patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
+      patient.medical_history?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.allergies?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewPatient = (id: number) => {
+  const handleViewPatient = (id: string) => {
     setSelectedPatient(id);
   };
 
@@ -45,10 +82,7 @@ const Patients = () => {
             <h1 className="text-3xl font-bold tracking-tight">Patients</h1>
             <p className="text-muted-foreground">Manage patient records</p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Patient
-          </Button>
+          <AddPatientDialog onSuccess={fetchPatients} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -56,7 +90,7 @@ const Patients = () => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name or condition..."
+              placeholder="Search by name or medical condition..."
               className="pl-9 w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -72,21 +106,30 @@ const Patients = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Age</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Condition</TableHead>
+                  <TableHead>Medical History</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPatients.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-6">
+                      Loading patients...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredPatients.length > 0 ? (
                   filteredPatients.map((patient) => (
                     <TableRow 
                       key={patient.id}
                       className="cursor-pointer"
+                      onClick={() => handleViewPatient(patient.id)}
                     >
                       <TableCell className="font-medium">{patient.name}</TableCell>
-                      <TableCell>{patient.age}</TableCell>
-                      <TableCell>{patient.contact}</TableCell>
-                      <TableCell>{patient.condition}</TableCell>
+                      <TableCell>{patient.age || "-"}</TableCell>
+                      <TableCell>{patient.contact || "-"}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {patient.medical_history || "-"}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button 
                           variant="outline" 
@@ -103,8 +146,8 @@ const Patients = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4">
-                      No patients found
+                    <TableCell colSpan={5} className="text-center py-6">
+                      {searchTerm ? "No patients match your search" : "No patients found"}
                     </TableCell>
                   </TableRow>
                 )}
