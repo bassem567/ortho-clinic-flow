@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -83,13 +82,30 @@ const AddPrescriptionForm = ({ onSuccess }: AddPrescriptionFormProps) => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // Format medications as JSON for database storage
+      const { data: visitData, error: visitError } = await supabase
+        .from("visits")
+        .insert({
+          patient_id: data.patientId,
+          doctor: data.doctor,
+          complaint: "Prescription visit",
+          diagnosis: null,
+          treatment: null,
+          notes: "Visit created for prescription"
+        })
+        .select('id')
+        .single();
+
+      if (visitError) {
+        console.error("Error creating visit:", visitError);
+        throw new Error(visitError.message);
+      }
+
       const { error } = await supabase.from("prescriptions").insert({
         patient_id: data.patientId,
         doctor: data.doctor,
         medications: data.medications,
         notes: data.notes || null,
-        visit_id: "placeholder-visit-id", // In a real app, you'd select this from visits
+        visit_id: visitData.id,
       });
 
       if (error) {
