@@ -8,8 +8,57 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { FileCheck, Printer, Search } from "lucide-react";
+import AddPrescriptionDialog from "@/components/prescriptions/AddPrescriptionDialog";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Prescriptions = () => {
+  const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchPrescriptions = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("prescriptions")
+        .select(`
+          id,
+          created_at,
+          doctor,
+          notes,
+          medications,
+          patients(name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPrescriptions(data || []);
+    } catch (error) {
+      console.error("Error fetching prescriptions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load prescriptions",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrescriptions();
+  }, []);
+
+  const handlePrescriptionAdded = () => {
+    fetchPrescriptions();
+    toast({
+      title: "Success",
+      description: "Prescription was created successfully",
+    });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -18,10 +67,7 @@ const Prescriptions = () => {
             <h1 className="text-3xl font-bold tracking-tight">Prescriptions</h1>
             <p className="text-muted-foreground">Generate and manage patient prescriptions</p>
           </div>
-          <Button>
-            <FileCheck className="mr-2 h-4 w-4" />
-            New Prescription
-          </Button>
+          <AddPrescriptionDialog onSuccess={handlePrescriptionAdded} />
         </div>
 
         <Tabs defaultValue="new" className="w-full">
@@ -169,32 +215,35 @@ const Prescriptions = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  {/* Sample prescription history items */}
-                  {[1, 2, 3].map((item) => (
-                    <div key={item} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">
-                          {["John Doe", "Sarah Williams", "Robert Johnson"][item - 1]}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {["Ibuprofen 400mg, Tramadol 50mg", "Naproxen 500mg", "Paracetamol 500mg"][item - 1]}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {[
-                            "Prescribed: 15 Apr 2023 • Dr. Smith", 
-                            "Prescribed: 10 Apr 2023 • Dr. Jones",
-                            "Prescribed: 05 Apr 2023 • Dr. Smith"
-                          ][item - 1]}
-                        </p>
+                  {loading ? (
+                    <p className="text-center py-4">Loading prescriptions...</p>
+                  ) : prescriptions.length > 0 ? (
+                    prescriptions.map((prescription) => (
+                      <div key={prescription.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <h3 className="font-medium">
+                            {prescription.patients?.name || "Unknown Patient"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {Array.isArray(prescription.medications) 
+                              ? prescription.medications.map((med: any) => med.name).join(", ")
+                              : "No medications listed"}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Prescribed: {new Date(prescription.created_at).toLocaleDateString()} • {prescription.doctor}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">View</Button>
+                          <Button variant="outline" size="sm">
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">View</Button>
-                        <Button variant="outline" size="sm">
-                          <Printer className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center py-4">No prescriptions found</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
