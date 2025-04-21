@@ -12,11 +12,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/providers/AuthProvider";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { signOut } = useAuth();
 
   const toggleSidebar = () => setCollapsed(!collapsed);
 
