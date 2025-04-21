@@ -1,12 +1,14 @@
 
+import { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, DollarSign, Search } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import AddPaymentDialog from "@/components/payments/AddPaymentDialog";
 
 // Mock payment data
 const MOCK_PAYMENTS = [
@@ -61,6 +63,21 @@ const MOCK_PAYMENTS = [
 ];
 
 const Payments = () => {
+  const [payments, setPayments] = useState(MOCK_PAYMENTS);
+  
+  const handleRefresh = () => {
+    // In a real app, this would fetch from Supabase
+    // For now, we'll just log that we would refresh
+    console.log("Refreshing payment data...");
+  };
+  
+  const handleMarkPaid = (id: number) => {
+    // Update the payment status to "Paid"
+    setPayments(payments.map(payment => 
+      payment.id === id ? { ...payment, status: "Paid" } : payment
+    ));
+  };
+
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -69,10 +86,7 @@ const Payments = () => {
             <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
             <p className="text-muted-foreground">Track and manage patient payments</p>
           </div>
-          <Button>
-            <DollarSign className="mr-2 h-4 w-4" />
-            Record Payment
-          </Button>
+          <AddPaymentDialog onSuccess={handleRefresh} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -161,7 +175,7 @@ const Payments = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_PAYMENTS.map((payment) => (
+                  {payments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">{payment.patient}</TableCell>
                       <TableCell>
@@ -179,7 +193,11 @@ const Payments = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         {payment.status === "Pending" ? (
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleMarkPaid(payment.id)}
+                          >
                             <Check className="mr-2 h-4 w-4" />
                             Mark Paid
                           </Button>
