@@ -125,7 +125,7 @@ const Patients = () => {
                       onClick={() => handleViewPatient(patient.id)}
                     >
                       <TableCell className="font-medium">{patient.name}</TableCell>
-                      <TableCell>{patient.age || "-"}</TableCell>
+                      <TableCell>{patient.age !== null ? patient.age : "-"}</TableCell>
                       <TableCell>{patient.contact || "-"}</TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         {patient.medical_history || "-"}

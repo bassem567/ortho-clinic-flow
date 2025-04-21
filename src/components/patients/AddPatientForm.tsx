@@ -47,12 +47,18 @@ const AddPatientForm = ({ onSuccess }: AddPatientFormProps) => {
   async function onSubmit(data: PatientFormValues) {
     setIsSubmitting(true);
     try {
-      // Convert empty strings to null for optional fields
-      const patientData = Object.fromEntries(
-        Object.entries(data).map(([key, value]) => {
-          return [key, value === "" ? null : value];
-        })
-      );
+      // Instead of using Object.fromEntries, we'll directly use the validated data object
+      // and handle empty strings conversion to null
+      const patientData = {
+        name: data.name,
+        age: data.age || null,
+        gender: data.gender || null,
+        contact: data.contact || null,
+        email: data.email || null,
+        address: data.address || null,
+        medical_history: data.medical_history || null,
+        allergies: data.allergies || null,
+      };
 
       const { data: patient, error } = await supabase
         .from("patients")
@@ -108,7 +114,16 @@ const AddPatientForm = ({ onSuccess }: AddPatientFormProps) => {
               <FormItem>
                 <FormLabel>Age</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="42" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="42"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? undefined : parseInt(value, 10));
+                    }}
+                    value={field.value || ""}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
